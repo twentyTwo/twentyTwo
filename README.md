@@ -15,7 +15,7 @@
 
 ## About
 
-I'm a staff software engineer with **10+ years** of experience designing and delivering production web platforms — from data models and APIs to React frontends and cloud infrastructure. At **Finsource Ltd** I lead full-stack initiatives, set technical direction, and mentor engineers across the team.
+I'm a Senior Staff Software Engineer with **14+ years** of experience designing and delivering production web platforms — from data models and APIs to React frontends and cloud infrastructure. At **Finsource Ltd** I lead full-stack initiatives, set technical direction, and mentor engineers across the team.
 
 - **Currently** — leading full-stack platform development at Finsource Ltd
 - **Focus** — system architecture, API design, and performance at scale
