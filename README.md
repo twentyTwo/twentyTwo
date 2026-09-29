@@ -8,20 +8,28 @@
   
   [![GitHub followers](https://img.shields.io/github/followers/twentyTwo?style=social)](https://github.com/twentyTwo)
   [![GitHub stars](https://img.shields.io/github/stars/twentyTwo?style=social)](https://github.com/twentyTwo)
+
+  🪔 **[Nobody touch the lamp →](https://twentytwo.github.io/twentyTwo/README.html)**
 </div>
 
 ---
 
-## 📊 GitHub Stats
-
-<div align="center">
-  <img height="180em" src="https://github-readme-stats.vercel.app/api?username=twentyTwo&show_icons=true&theme=tokyonight&include_all_commits=true&count_private=true"/>
-  <img height="180em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=twentyTwo&layout=compact&langs_count=8&theme=tokyonight"/>
+<div align="center"> 
+  <p>Visitor count</p>
+  <img src="https://profile-counter.glitch.me/twentyTwo/count.svg" alt="Visitor's Count" />
 </div>
 
-<div align="center">
-  <img src="https://github-readme-streak-stats.herokuapp.com/?user=twentyTwo&theme=tokyonight&hide_border=true" alt="GitHub Streak"/>
+## ⚡️ Stats
+
+<br>
+
+<div align=center>
+  <img width=390 src="https://github-readme-stats.vercel.app/api?username=twentyTwo&theme=transparent&count_private=true&show_icons=true&rank_icon=github&locale=en" alt="twentyTwo's GitHub Stats" />
+  <img width=390 src="https://github-readme-streak-stats.herokuapp.com/?user=twentyTwo&theme=transparent&count_private=true&border_radius=10&locale=en" alt="twentyTwo's" />
+  <img width=325 src="https://github-readme-stats.vercel.app/api/top-langs?username=twentyTwo&theme=transparent&layout=donut&hide=css&langs_count=8&border_radius=10&show_icons=true&locale=en" alt="twentyTwo's Most Used Languages" />
 </div>
+
+<hr>
 
 ---
 
@@ -97,14 +105,6 @@ I'm Md Noor Alam Shuvo, a passionate full stack developer currently working at *
   [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/twentyTwo)
   [![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/twentyTwo)
   
-</div>
-
----
-
-## 📊 Profile Views
-
-<div align="center">
-  <img src="https://profile-counter.glitch.me/twentyTwo/count.svg" alt="Profile Views"/>
 </div>
 
 ---
