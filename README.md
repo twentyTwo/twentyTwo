@@ -4,12 +4,12 @@
   <img src="https://avatars.githubusercontent.com/u/4258676?v=4" alt="Md Noor Alam Shuvo" width="150" height="150" style="border-radius: 50%; border: 4px solid #00d9ff; box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);">
   
   ### Md Noor Alam Shuvo
-  **Full Stack Developer | Finsource Ltd | Dhaka, Bangladesh**
+  **Technical Architect & Team Lead | FinSource Ltd | 7× Salesforce Certified | Dhaka, Bangladesh**
   
   [![GitHub followers](https://img.shields.io/github/followers/twentyTwo?style=social)](https://github.com/twentyTwo)
   [![GitHub stars](https://img.shields.io/github/stars/twentyTwo?style=social)](https://github.com/twentyTwo)
 
-  🪔 **[Nobody touch the lamp →](https://twentytwo.github.io/twentyTwo/README.html)**
+  🔦 **[Who turned off the lights? →](https://twentytwo.github.io/twentyTwo/README.html)**
 </div>
 
 ---
@@ -35,9 +35,9 @@
 
 ## 🚀 About Me
 
-I'm Md Noor Alam Shuvo, a passionate full stack developer currently working at **Finsource Ltd** in Dhaka, Bangladesh. With over 10 years of experience in software development, I specialize in building scalable web applications and contributing to open-source projects. I love solving complex problems and creating elegant solutions.
+I'm Md Noor Alam Shuvo, a technical architect and team lead at **FinSource Ltd** in Dhaka, Bangladesh. I design and build Salesforce solutions for banking and wealth management (6+ years on the platform, 7 certifications), and on the side I make developer tools like [Coding Time Tracker](https://github.com/twentyTwo/vsc-ext-coding-time-tracker) for VS Code.
 
-- 🔭 Currently working at Finsource Ltd
+- 🔭 Leading Salesforce delivery at FinSource Ltd
 - 🌱 Continuously learning new technologies and best practices
 - 👯 Looking to collaborate on open source projects
 - 💬 Ask me about web development and software architecture
@@ -75,7 +75,7 @@ I'm Md Noor Alam Shuvo, a passionate full stack developer currently working at *
 
 ## 🔥 Recent Contributions
 
-- 🌟 **Open Source Projects**: Contributing to various open-source repositories with 83 public repositories
+- 🌟 **Open Source Projects**: Contributing to various open-source repositories with 88 public repositories
 - 👥 **Community Engagement**: Active member of developer communities, helping others solve problems
 - 📝 **Knowledge Sharing**: Sharing expertise through code and documentation
 
@@ -102,8 +102,7 @@ I'm Md Noor Alam Shuvo, a passionate full stack developer currently working at *
 <div align="center">
   
   [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/twentyTwo)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/twentyTwo)
-  [![Twitter](https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white)](https://twitter.com/twentyTwo)
+  [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/noor-alam-shuvo)
   
 </div>
 
@@ -119,11 +118,11 @@ I'm Md Noor Alam Shuvo, a passionate full stack developer currently working at *
 
 ### 📌 Quick Stats
 
-- 🏢 **Company**: Finsource Ltd
+- 🏢 **Company**: FinSource Ltd
 - 📍 **Location**: Dhaka, Bangladesh
-- 📦 **Public Repositories**: 83
-- 👥 **Followers**: 12
-- 🤝 **Following**: 36
+- 📦 **Public Repositories**: 88
+- 👥 **Followers**: 13
+- 🤝 **Following**: 38
 - 📅 **GitHub Member Since**: April 2013
 
 ---

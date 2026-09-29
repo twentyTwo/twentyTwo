@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nobody Touch the Lamp</title>
-    <meta name="description" content="Md Noor Alam Shuvo — full stack developer. Flip the switch, swing the shade, and try not to break the bulb.">
+    <title>Lights Out</title>
+    <meta name="description" content="Md Noor Alam Shuvo — Salesforce technical architect and team lead at FinSource. The lights are out; a little night guard with a torch will show you around.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
 
         a { color: inherit; }
 
-        /* ---------- the room (darkness + lamp + slingshot) ---------- */
+        /* ---------- the room (darkness + beam) ---------- */
         #room {
             position: fixed;
             inset: 0;
@@ -45,18 +45,18 @@
             pointer-events: none;
         }
 
-        .handle {
+        /* fade band so content scrolling under the HUD stays out of the way */
+        body::before {
+            content: "";
             position: fixed;
-            left: 0;
             top: 0;
-            z-index: 4;
-            touch-action: none;
-            cursor: grab;
-            border-radius: 50%;
+            left: 0;
+            right: 0;
+            height: 130px;
+            z-index: 5;
+            pointer-events: none;
+            background: linear-gradient(var(--room) 55%, transparent);
         }
-        .handle:active { cursor: grabbing; }
-        #shadeHandle { width: 110px; height: 90px; }
-        #slingHandle { width: 64px; height: 64px; }
 
         /* ---------- HUD ---------- */
         .hud {
@@ -68,12 +68,12 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            gap: 16px;
             font-size: 12px;
             color: var(--muted);
             pointer-events: none;
         }
-        .hud > * { pointer-events: auto; }
-        .hud .tl { max-width: 40vw; }
+        .hud button { pointer-events: auto; }
         .hud .title {
             font-family: var(--serif);
             font-weight: 400;
@@ -83,73 +83,135 @@
             margin: 6px 0 6px;
         }
         .hud .title em { color: var(--light); }
-        .hud .hint { line-height: 1.6; }
-        .hud .tr { text-align: right; }
-        .hud .tr b { color: var(--paper); font-weight: 500; }
-
-        #replace {
-            margin-top: 8px;
-            font: inherit;
-            color: var(--light);
-            background: none;
-            border: 1px dashed var(--amber);
-            padding: 4px 10px;
-            border-radius: 999px;
-            cursor: pointer;
+        .hud .hint { line-height: 1.6; max-width: 46ch; }
+        .hud kbd { font: inherit; color: var(--paper); }
+        .hud .tr {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            white-space: nowrap;
         }
-        #replace[hidden] { display: none; }
+        .hud .tr b { color: var(--light); font-weight: 500; }
+        .hud .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: 1px;
+            background: #4a433c;
+            transition: background .3s, box-shadow .3s;
+        }
+        body.lit .hud .dot { background: var(--light); box-shadow: 0 0 8px var(--light); }
 
-        /* wall switch */
-        .switch {
+        .chip {
+            font: inherit;
+            color: var(--paper);
+            background: #1d1a17;
+            border: 1px solid #3a342e;
+            border-radius: 999px;
+            padding: 5px 12px;
+            cursor: pointer;
+            transition: border-color .2s, color .2s;
+        }
+        .chip:hover, .chip:focus-visible { border-color: var(--amber); color: var(--light); outline: none; }
+        .chip[aria-pressed="true"] { border-color: var(--amber); color: var(--light); }
+
+        /* ---------- section index ---------- */
+        .tour {
             position: fixed;
-            top: 76px;
             right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
             z-index: 6;
             display: flex;
             flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        .tour button {
+            display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
+            font: 11px var(--mono);
+            letter-spacing: .06em;
+            color: var(--muted);
             background: none;
             border: 0;
+            padding: 5px 0;
             cursor: pointer;
-            font: 11px var(--mono);
-            color: var(--muted);
+            transition: color .2s;
         }
-        .switch .plate {
-            width: 36px;
-            height: 56px;
-            border-radius: 6px;
-            background: #2a2622;
-            border: 1px solid #3d3731;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 6px 18px rgba(0,0,0,.5);
-            display: grid;
-            place-items: center;
+        .tour button::after {
+            content: "";
+            width: 14px;
+            height: 1px;
+            background: currentColor;
+            transition: width .25s;
         }
-        .switch .toggle {
-            width: 12px;
-            height: 26px;
-            border-radius: 4px;
-            background: #151311;
-            position: relative;
+        .tour button:hover, .tour button:focus-visible { color: var(--paper); outline: none; }
+        .tour button[aria-current="true"] { color: var(--light); }
+        .tour button[aria-current="true"]::after { width: 30px; box-shadow: 0 0 6px var(--light); }
+
+        /* ---------- the night guard ---------- */
+        .guard {
+            position: fixed;
+            left: 28px;
+            bottom: 18px;
+            z-index: 6;
+            width: 120px;
+            height: 160px;
+            padding: 0;
+            border: 0;
+            background: none;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
         }
-        .switch .toggle::after {
+        .guard svg { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
+        .guard:focus-visible { outline: 1px dashed var(--amber); outline-offset: 6px; border-radius: 12px; }
+        .guard.nudge::before {
             content: "";
             position: absolute;
-            left: 1px;
-            right: 1px;
-            height: 12px;
-            bottom: 1px;
-            border-radius: 3px;
-            background: #6b6258;
-            transition: transform .12s ease, background .2s;
+            left: 50%;
+            top: 55%;
+            width: 130%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 1px solid var(--amber);
+            transform: translate(-50%, -50%);
+            animation: ping 1.8s ease-out infinite;
         }
-        .switch[aria-pressed="true"] .toggle::after {
-            transform: translateY(-12px);
-            background: var(--light);
-            box-shadow: 0 0 10px rgba(255,213,154,.6);
+        @keyframes ping {
+            from { transform: translate(-50%, -50%) scale(.55); opacity: .8; }
+            to { transform: translate(-50%, -50%) scale(1.15); opacity: 0; }
         }
-        .switch[aria-pressed="true"] .sw-label { color: var(--light); }
-        .switch:focus-visible { outline: 1px dashed var(--amber); outline-offset: 6px; }
+
+        .bob { animation: bob 3.2s ease-in-out infinite; }
+        @keyframes bob { 50% { transform: translateY(1.5px); } }
+
+        .blink { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+        @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+
+        .bubble {
+            position: fixed;
+            left: 128px;
+            bottom: 162px;
+            z-index: 6;
+            max-width: 210px;
+            padding: 7px 11px;
+            font-size: 11px;
+            line-height: 1.5;
+            color: var(--paper);
+            background: #1d1a17;
+            border: 1px solid #3a342e;
+            border-radius: 10px 10px 10px 2px;
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity .25s, transform .25s;
+            pointer-events: none;
+        }
+        .bubble.show { opacity: 1; transform: none; }
 
         /* ---------- content ---------- */
         .content {
@@ -157,8 +219,11 @@
             z-index: 1;
             max-width: 640px;
             margin: 0 auto;
-            padding: 290px 24px 140px;
+            padding: 170px 24px 40vh;
         }
+
+        [data-spot] { cursor: pointer; }
+        [data-spot] a { cursor: pointer; }
 
         .intro { text-align: center; }
         .intro img {
@@ -182,6 +247,7 @@
             letter-spacing: .12em;
             text-transform: uppercase;
             color: var(--muted);
+            line-height: 1.8;
         }
 
         section { margin-top: 72px; }
@@ -219,6 +285,24 @@
         }
         .now li::before { content: "→ "; color: var(--amber); }
 
+        .projects { list-style: none; }
+        .proj {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 4px 16px;
+            align-items: baseline;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--line);
+            text-decoration: none;
+        }
+        .projects li:first-child .proj { border-top: 1px solid var(--line); }
+        .proj .pn { font-family: var(--serif); font-size: 23px; line-height: 1.2; transition: color .2s; }
+        .proj .pm { font-size: 11px; color: var(--muted); white-space: nowrap; }
+        .proj .pm b { color: var(--light); font-weight: 500; }
+        .proj .pd { grid-column: 1 / -1; font-size: 12px; line-height: 1.6; color: var(--muted); }
+        .proj:hover .pn, .proj:focus-visible .pn { color: var(--light); }
+        .proj:focus-visible { outline: none; }
+
         .numbers {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -248,7 +332,7 @@
             font-size: 13px;
             line-height: 1.6;
         }
-        .stack .row:first-child { border-top: 1px solid var(--line); }
+        .stack .row:first-of-type { border-top: 1px solid var(--line); }
         .stack .k { color: var(--muted); }
 
         .elsewhere {
@@ -278,91 +362,167 @@
             line-height: 1.8;
         }
 
+        @media (max-width: 900px) {
+            .tour { display: none; }
+        }
+
         @media (max-width: 600px) {
+            body::before { height: 120px; background: linear-gradient(var(--room) 60%, transparent); }
             .hud { top: 14px; left: 16px; right: 16px; font-size: 11px; }
-            .hud .tl { max-width: 38vw; }
-            .hud .title { font-size: 19px; }
-            .switch { top: 64px; right: 16px; }
-            .content { padding: 230px 16px 150px; }
+            .hud .title { font-size: 20px; }
+            .hud .hint { display: none; }
+            .guard { left: 8px; bottom: 8px; width: 72px; height: 96px; }
+            .bubble { left: 74px; bottom: 96px; max-width: 170px; font-size: 10px; }
+            .content { padding: 130px 16px 40vh; }
             .lede { font-size: 21px; }
+            .proj .pn { font-size: 20px; }
             .numbers { grid-template-columns: repeat(2, 1fr); gap: 24px 16px; }
             .stack .row { grid-template-columns: 1fr; gap: 2px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bob, .blink, .guard.nudge::before { animation: none; }
+            .bubble { transition: none; }
         }
     </style>
 </head>
 <body>
     <canvas id="room" aria-hidden="true"></canvas>
-    <div id="shadeHandle" class="handle" aria-hidden="true"></div>
-    <div id="slingHandle" class="handle" aria-hidden="true"></div>
 
     <header class="hud">
         <div class="tl">
             <span id="clock">03:14 AM</span>
-            <p class="title">Nobody touch the <em>lamp</em></p>
-            <p class="hint">flip the switch · drag the shade · pull the slingshot · <kbd>L</kbd></p>
+            <p class="title">Who turned off the <em>lights</em>?</p>
+            <p class="hint">tap the guard for the torch · click any section to point it · <kbd>↑</kbd><kbd>↓</kbd> to walk</p>
         </div>
         <div class="tr">
-            <div>shots <b id="shots">0</b> · bulbs <b id="bulbs">0</b></div>
-            <button id="replace" type="button" hidden>replace bulb</button>
+            <div aria-live="polite"><span class="dot"></span><span id="status">lights out</span></div>
+            <button id="lights" class="chip" type="button" aria-pressed="false">turn the lights on</button>
         </div>
     </header>
 
-    <button id="switch" class="switch" type="button" aria-pressed="false" aria-label="Lamp switch">
-        <span class="plate"><span class="toggle"></span></span>
-        <span class="sw-label">off</span>
+    <nav class="tour" id="tour" aria-label="Sections"></nav>
+
+    <button id="guard" class="guard" type="button" aria-pressed="false" aria-label="Torch">
+        <svg viewBox="0 0 120 160" aria-hidden="true">
+            <ellipse cx="60" cy="156" rx="34" ry="3.5" fill="#000" opacity=".35"/>
+            <g class="bob">
+                <!-- legs + shoes -->
+                <rect x="45" y="116" width="11" height="36" rx="4" fill="#26221e"/>
+                <rect x="64" y="116" width="11" height="36" rx="4" fill="#26221e"/>
+                <ellipse cx="49" cy="153" rx="9" ry="4" fill="#171513"/>
+                <ellipse cx="71" cy="153" rx="9" ry="4" fill="#171513"/>
+                <!-- back arm -->
+                <rect x="31" y="75" width="10" height="38" rx="5" fill="#4a3a2e"/>
+                <circle cx="36" cy="114" r="5" fill="#c49c77"/>
+                <!-- hoodie -->
+                <path d="M38 72 Q60 63 82 72 L85 122 Q60 128 35 122 Z" fill="#5a4636"/>
+                <path d="M50 70 Q60 80 70 70" stroke="#4a3a2e" stroke-width="2" fill="none"/>
+                <rect x="50" y="100" width="20" height="11" rx="3" fill="#4a3a2e"/>
+                <!-- head -->
+                <g id="head">
+                    <circle cx="60" cy="47" r="21" fill="#d6ad86"/>
+                    <path d="M38 45 Q38 20 60 20 Q82 20 82 45 Q60 37 38 45 Z" fill="#c8793f"/>
+                    <rect x="37" y="38" width="46" height="8" rx="4" fill="#a8602f"/>
+                    <circle cx="60" cy="18" r="5" fill="#e8a25a"/>
+                    <g id="eyes"><g class="blink">
+                        <ellipse cx="53" cy="53" rx="2.2" ry="3" fill="#1b1816"/>
+                        <ellipse cx="67" cy="53" rx="2.2" ry="3" fill="#1b1816"/>
+                    </g></g>
+                    <circle cx="48" cy="59" r="2.6" fill="#e0916e" opacity=".45"/>
+                    <circle cx="72" cy="59" r="2.6" fill="#e0916e" opacity=".45"/>
+                    <path d="M56 61 Q60 63.5 64 61" stroke="#8a5a40" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                </g>
+                <!-- front arm + torch, pivots at the shoulder (80, 78) -->
+                <g id="arm" transform="translate(80 78) rotate(68)">
+                    <rect x="-5" y="-5" width="34" height="10" rx="5" fill="#5a4636"/>
+                    <rect x="27" y="-4.5" width="25" height="9" rx="2" fill="#57504a"/>
+                    <path d="M52 -4.5 L60 -8 L60 8 L52 4.5 Z" fill="#6b635b"/>
+                    <rect id="lens" x="60" y="-8" width="2.5" height="16" rx="1" fill="#3b3631"/>
+                    <circle cx="44" cy="-4.6" r="1.5" fill="#b44a2e"/>
+                    <circle cx="31" cy="0" r="5.5" fill="#d6ad86"/>
+                </g>
+            </g>
+        </svg>
     </button>
+    <p id="bubble" class="bubble" role="status"></p>
 
     <main class="content">
-        <div class="intro">
+        <div class="intro" data-spot data-name="hello">
             <img src="https://avatars.githubusercontent.com/u/4258676?v=4" alt="Portrait of Md Noor Alam Shuvo">
             <h1>Md Noor Alam <em>Shuvo</em></h1>
-            <p class="role">Full stack developer · Finsource Ltd · Dhaka</p>
+            <p class="role">Technical Architect &amp; Team Lead · FinSource Ltd<br>7× Salesforce certified · Dhaka</p>
         </div>
 
-        <section>
+        <section data-spot data-name="about">
             <h2 class="label">01 / about</h2>
             <p class="lede">
-                I build <em>scalable web applications</em> and have been shipping software for over ten years.
-                I like hard problems, quiet solutions, and code that still reads well at 3&nbsp;a.m.
+                I design and build <em>Salesforce solutions</em> for banking and wealth management:
+                clean architecture, automation at scale, and integrations that hold up.
+                On the side, I make small developer tools that people actually use.
             </p>
             <ul class="now">
-                <li>Currently building at Finsource Ltd</li>
-                <li>Open to collaborating on open source</li>
-                <li>Ask me about web development &amp; software architecture</li>
-                <li>Coding on GitHub since 2013</li>
+                <li>Leading Salesforce delivery at FinSource Ltd</li>
+                <li>6+ years on the Salesforce platform, 7 certifications</li>
+                <li>Lately: tinkering with AI-agent workflows</li>
+                <li>Writing code on GitHub since 2013</li>
             </ul>
         </section>
 
-        <section>
-            <h2 class="label">02 / by the numbers</h2>
+        <section data-spot data-name="built">
+            <h2 class="label">02 / things I've built</h2>
+            <ul class="projects">
+                <li><a class="proj" href="https://github.com/twentyTwo/vsc-ext-coding-time-tracker" target="_blank" rel="noopener">
+                    <span class="pn">Coding Time Tracker</span><span class="pm"><b>151★</b> · TypeScript</span>
+                    <span class="pd">A simple coding time tracker for Visual Studio Code.</span></a></li>
+                <li><a class="proj" href="https://github.com/twentyTwo/br-ext-sf-bookmark-manager" target="_blank" rel="noopener">
+                    <span class="pn">Salesforce Org Manager</span><span class="pm">browser extension</span>
+                    <span class="pd">Streamlines working across many Salesforce orgs, right from the browser.</span></a></li>
+                <li><a class="proj" href="https://github.com/twentyTwo/idea-space" target="_blank" rel="noopener">
+                    <span class="pn">IdeaSpace</span><span class="pm">Shell</span>
+                    <span class="pd">A GitHub-issues idea pipeline that researches and grills every idea before you decide.</span></a></li>
+                <li><a class="proj" href="https://github.com/twentyTwo/waypost-agent" target="_blank" rel="noopener">
+                    <span class="pn">Waypost Agent</span><span class="pm">template</span>
+                    <span class="pd">A template repo for handing work between AI agent roles: build, automated test, manual test.</span></a></li>
+                <li><a class="proj" href="https://github.com/twentyTwo/SalesforceExceptionLogger" target="_blank" rel="noopener">
+                    <span class="pn">Salesforce Exception Logger</span><span class="pm"><b>3★</b> · Apex</span>
+                    <span class="pd">Exception logging for Salesforce orgs.</span></a></li>
+                <li><a class="proj" href="https://github.com/twentyTwo/Npp.Plugins-SQLPrettyPrinter" target="_blank" rel="noopener">
+                    <span class="pn">SQL Pretty Printer</span><span class="pm"><b>3★</b> · C#</span>
+                    <span class="pd">A SQL beautifier plugin for Notepad++.</span></a></li>
+            </ul>
+        </section>
+
+        <section data-spot data-name="numbers">
+            <h2 class="label">03 / by the numbers</h2>
             <div class="numbers">
-                <div><b>83</b><span>repositories</span></div>
-                <div><b>12</b><span>followers</span></div>
-                <div><b>36</b><span>following</span></div>
-                <div><b>2013</b><span>member since</span></div>
+                <div><b>7×</b><span>salesforce certified</span></div>
+                <div><b>151</b><span>stars on one extension</span></div>
+                <div><b>88</b><span>public repos</span></div>
+                <div><b>2013</b><span>on github since</span></div>
             </div>
         </section>
 
-        <section class="stack">
-            <h2 class="label">03 / stack</h2>
-            <div class="row"><span class="k">frontend</span><span>JavaScript · TypeScript · React · Vue · HTML · CSS</span></div>
-            <div class="row"><span class="k">backend</span><span>Node.js · Express · Python</span></div>
-            <div class="row"><span class="k">data</span><span>PostgreSQL · MySQL · MongoDB</span></div>
-            <div class="row"><span class="k">tools</span><span>Git · Docker · AWS · VS Code</span></div>
+        <section class="stack" data-spot data-name="stack">
+            <h2 class="label">04 / stack</h2>
+            <div class="row"><span class="k">salesforce</span><span>Apex · LWC · Flow · Experience Cloud · Platform Events · SOQL</span></div>
+            <div class="row"><span class="k">integration</span><span>REST / SOAP · MuleSoft · OData</span></div>
+            <div class="row"><span class="k">delivery</span><span>Salesforce CLI · Copado · Gearset · DevOps Center · Git</span></div>
+            <div class="row"><span class="k">web &amp; tools</span><span>JavaScript · TypeScript · React · Node.js · C# · Tailwind</span></div>
         </section>
 
-        <section>
-            <h2 class="label">04 / elsewhere</h2>
+        <section data-spot data-name="elsewhere">
+            <h2 class="label">05 / elsewhere</h2>
             <ul class="elsewhere">
                 <li><a href="https://github.com/twentyTwo" target="_blank" rel="noopener">github ↗</a></li>
-                <li><a href="https://linkedin.com/in/twentyTwo" target="_blank" rel="noopener">linkedin ↗</a></li>
-                <li><a href="https://twitter.com/twentyTwo" target="_blank" rel="noopener">twitter ↗</a></li>
+                <li><a href="https://www.linkedin.com/in/noor-alam-shuvo" target="_blank" rel="noopener">linkedin ↗</a></li>
+                <li><a href="mailto:noor.alam.shuvo@gmail.com">email ↗</a></li>
             </ul>
         </section>
 
         <footer>
             <p>© 2026 Md Noor Alam Shuvo · made in Dhaka</p>
-            <p>lamp idea from <a href="https://kamran.fyi/lamp" target="_blank" rel="noopener">kamran.fyi</a></p>
+            <p>inspired by <a href="https://kamran.fyi/lamp" target="_blank" rel="noopener">kamran.fyi/lamp</a></p>
         </footer>
     </main>
 
@@ -371,21 +531,30 @@
         const $ = s => document.querySelector(s);
         const cv = $('#room');
         const ctx = cv.getContext('2d');
-        const sw = $('#switch');
-        const swLabel = sw.querySelector('.sw-label');
-        const shotsEl = $('#shots');
-        const bulbsEl = $('#bulbs');
-        const replaceBtn = $('#replace');
-        const shadeH = $('#shadeHandle');
-        const slingH = $('#slingHandle');
+        const guard = $('#guard');
+        const svg = guard.querySelector('svg');
+        const arm = $('#arm');
+        const head = $('#head');
+        const eyes = $('#eyes');
+        const lens = $('#lens');
+        const bubble = $('#bubble');
+        const statusEl = $('#status');
+        const lightsBtn = $('#lights');
+        const tour = $('#tour');
+        const spots = [...document.querySelectorAll('[data-spot]')];
         const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        const HALF = 0.62;          // half-angle of the light cone (rad)
-        const SWING = 15.4;         // g / L for the pendulum
-        const GRAVITY = 1500;       // px/s² for pebbles and shards
+        const SHOULDER = { x: 80, y: 78 };  // arm pivot, in SVG units
+        const TIP = 62.5;                   // shoulder → lens distance, in SVG units
+        const REST = 68;                    // arm angle (deg) while the torch is off
         const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        const ease = (rate, dt) => reduced ? 1 : 1 - Math.exp(-rate * dt);
+        const store = {
+            get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+            set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } },
+        };
 
-        let W, H, S, cx, L, sling;
+        let W, H;
         function resize() {
             const dpr = Math.min(window.devicePixelRatio || 1, 2);
             W = innerWidth;
@@ -395,22 +564,16 @@
             cv.style.width = W + 'px';
             cv.style.height = H + 'px';
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            const small = W < 600;
-            S = small ? 0.8 : 1;
-            cx = W / 2;
-            L = small ? 100 : 140;
-            sling = { x: small ? 46 : 76, y: H - (small ? 26 : 40) };
         }
         resize();
         addEventListener('resize', resize);
 
         const st = {
-            th: reduced ? 0 : 0.22, om: 0,
-            on: false, bulb: true, I: 0, flickEnd: 0,
-            shots: 0, bulbs: 0,
-            drag: null, pull: null,
-            pebbles: [], shards: [],
-            gesture: false, touched: false, restoreTimer: 0,
+            on: false, lit: false, I: 0, flickEnd: 0,
+            room: false, R: 0,              // "lights on" reading mode
+            phi: REST, beam: null, spot: null,
+            hover: null, focus: null, pin: null, pinY: 0,
+            gesture: false, touched: false, taught: false, bubbleTimer: 0,
         };
 
         // ---------- sound (only after a user gesture) ----------
@@ -430,208 +593,236 @@
                 o.stop(ac.currentTime + dur);
             } catch (e) { /* no audio, no problem */ }
         }
-        const click = () => blip(1400, 0.04);
-        const thunk = () => blip(140, 0.12, 'triangle', 0.06);
-        const glass = () => { for (let i = 0; i < 6; i++) setTimeout(() => blip(2200 + Math.random() * 3200, 0.14, 'triangle', 0.025), i * 22); };
         const markGesture = () => { st.gesture = true; };
         addEventListener('pointerdown', markGesture, { capture: true });
         addEventListener('keydown', markGesture, { capture: true });
 
-        // ---------- geometry ----------
-        function geo() {
-            const s = Math.sin(st.th), c = Math.cos(st.th);
-            const P = { x: cx + L * s, y: L * c };
-            const at = d => ({ x: P.x + s * d * S, y: P.y + c * d * S });
-            return {
-                s, c, P,
-                shadeC: at(30),
-                bulb: at(60),
-                light: at(58 - 56 / Math.tan(HALF)),
-            };
+        // ---------- speech bubble ----------
+        function say(text, ms) {
+            clearTimeout(st.bubbleTimer);
+            bubble.textContent = text;
+            bubble.classList.add('show');
+            if (ms) st.bubbleTimer = setTimeout(() => bubble.classList.remove('show'), ms);
+        }
+        function hush() {
+            clearTimeout(st.bubbleTimer);
+            bubble.classList.remove('show');
         }
 
-        // ---------- lamp state ----------
+        // ---------- torch + room state ----------
         function setOn(on) {
             st.on = on;
-            sw.setAttribute('aria-pressed', String(on));
-            swLabel.textContent = on ? 'on' : 'off';
-            if (on) st.flickEnd = performance.now() / 1000 + 0.5;
-        }
-        function toggle() { setOn(!st.on); click(); }
-
-        function breakBulb(p) {
-            st.bulb = false;
-            st.bulbs++;
-            bulbsEl.textContent = st.bulbs;
-            replaceBtn.hidden = false;
-            const g = geo();
-            for (let i = 0; i < 22; i++) {
-                const a = Math.random() * Math.PI * 2, v = 120 + Math.random() * 380;
-                st.shards.push({
-                    x: g.bulb.x, y: g.bulb.y,
-                    vx: Math.cos(a) * v + p.vx * 0.15, vy: Math.sin(a) * v + p.vy * 0.15,
-                    a: Math.random() * 6, life: 1 + Math.random() * 0.6,
-                });
+            guard.setAttribute('aria-pressed', String(on));
+            if (on) {
+                if (!st.taught) {
+                    st.taught = true;
+                    say('there we go.', 1800);
+                    st.bubbleTimer = setTimeout(() => say('tap any section — I’ll point at it.', 4200), 1900);
+                } else {
+                    say('there we go.', 1800);
+                }
+            } else {
+                st.lit = false;
+                say('hey — who turned off the lights?');
             }
-            if (!reduced) st.om += clamp(p.vx * 0.004, -4, 4);
-            glass();
-            clearTimeout(st.restoreTimer);
-            st.restoreTimer = setTimeout(restoreBulb, 3000);
+            refresh();
         }
-        function restoreBulb() {
-            clearTimeout(st.restoreTimer);
-            if (st.bulb) return;
-            st.bulb = true;
-            replaceBtn.hidden = true;
-            st.flickEnd = performance.now() / 1000 + 0.5;
-            click();
+        function toggle() {
+            st.touched = true;
+            setOn(!st.on);
+            if (!st.on) blip(900, 0.04);
+        }
+        function setRoom(on) {
+            st.room = on;
+            lightsBtn.setAttribute('aria-pressed', String(on));
+            lightsBtn.textContent = on ? 'turn the lights off' : 'turn the lights on';
+            store.set('lights-on', on ? '1' : '0');
+            refresh();
+        }
+        function refresh() {
+            if (st.room) statusEl.textContent = 'lights on';
+            else if (st.on && st.spot) statusEl.innerHTML = `lighting · <b>${st.spot.dataset.name}</b>`;
+            else statusEl.textContent = 'lights out';
+            document.body.classList.toggle('lit', st.room || st.on);
+            guard.classList.toggle('nudge', !st.on && !st.room);
+            for (const el of spots) el.navBtn.setAttribute('aria-current', String(el === st.spot));
         }
 
-        sw.addEventListener('click', () => { st.touched = true; toggle(); });
-        replaceBtn.addEventListener('click', restoreBulb);
+        guard.addEventListener('click', toggle);
+        lightsBtn.addEventListener('click', () => {
+            st.touched = true;
+            setRoom(!st.room);
+            if (st.room) say('fine — reading mode.', 2000);
+            else say('back to the dark.', 2000);
+        });
+
+        // ---------- pointing the torch ----------
+        // pin a section; scrolling well away from it hands control back to the reading line
+        function pointAt(el, scroll) {
+            st.touched = true;
+            if (!st.on && !st.room) setOn(true);
+            else hush();
+            let y = scrollY;
+            if (scroll) {
+                const r = el.getBoundingClientRect();
+                const max = document.documentElement.scrollHeight - H;
+                y = clamp(scrollY + r.top + Math.min(r.height, H * 0.6) / 2 - H * 0.45, 0, max);
+                scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' });
+            }
+            st.pin = el;
+            st.pinY = y;
+        }
+
+        spots.forEach((el, i) => {
+            el.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') st.hover = el; });
+            el.addEventListener('pointerleave', () => { if (st.hover === el) st.hover = null; });
+            el.addEventListener('focusin', () => { st.focus = el; });
+            el.addEventListener('focusout', () => { if (st.focus === el) st.focus = null; });
+            el.addEventListener('click', e => { if (!e.target.closest('a')) pointAt(el, false); });
+
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.textContent = `${String(i).padStart(2, '0')}  ${el.dataset.name}`;
+            b.addEventListener('click', () => pointAt(el, true));
+            tour.append(b);
+            el.navBtn = b;
+        });
+
         addEventListener('keydown', e => {
-            if (e.key.toLowerCase() === 'l' && !e.metaKey && !e.ctrlKey && !e.altKey) {
-                st.touched = true;
-                toggle();
+            if (e.metaKey || e.ctrlKey || e.altKey) return;
+            const k = e.key.toLowerCase();
+            if (k === 't' || k === 'l') return toggle();
+            const dir = (k === 'arrowdown' || k === 'j') ? 1 : (k === 'arrowup' || k === 'k') ? -1 : 0;
+            if (!dir) return;
+            e.preventDefault();
+            const i = clamp(spots.indexOf(st.spot) + dir, 0, spots.length - 1);
+            pointAt(spots[i], true);
+        });
+
+        function pickSpot() {
+            if (st.pin && Math.abs(scrollY - st.pinY) > 160) st.pin = null;
+            if (st.hover) return st.hover;
+            if (st.pin) return st.pin;
+            if (st.focus) return st.focus;
+            const line = H * 0.45;
+            let best = spots[0], bestD = Infinity;
+            for (const el of spots) {
+                const r = el.getBoundingClientRect();
+                if (r.bottom < 0 || r.top > H) continue;
+                const d = Math.abs((r.top + r.bottom) / 2 - line);
+                if (d < bestD) { best = el; bestD = d; }
             }
-        });
+            return best;
+        }
 
-        // ---------- dragging the shade ----------
-        shadeH.addEventListener('pointerdown', e => {
-            e.preventDefault();
-            shadeH.setPointerCapture(e.pointerId);
-            st.drag = { last: st.th, t: performance.now(), v: 0 };
-        });
-        shadeH.addEventListener('pointermove', e => {
-            if (!st.drag) return;
-            const th = clamp(Math.atan2(e.clientX - cx, Math.max(20, e.clientY)), -1.2, 1.2);
-            const now = performance.now();
-            const dt = Math.max(1, now - st.drag.t) / 1000;
-            st.drag.v = 0.6 * st.drag.v + 0.4 * (th - st.drag.last) / dt;
-            st.drag.last = th;
-            st.drag.t = now;
-            st.th = th;
-            st.om = 0;
-        });
-        const endDrag = () => {
-            if (!st.drag) return;
-            st.om = reduced ? 0 : clamp(st.drag.v, -10, 10);
-            st.drag = null;
-        };
-        shadeH.addEventListener('pointerup', endDrag);
-        shadeH.addEventListener('pointercancel', endDrag);
-
-        // ---------- slingshot ----------
-        const rest = () => ({ x: sling.x, y: sling.y - 64 * S });
-        slingH.addEventListener('pointerdown', e => {
-            e.preventDefault();
-            slingH.setPointerCapture(e.pointerId);
-            st.pull = rest();
-        });
-        slingH.addEventListener('pointermove', e => {
-            if (!st.pull) return;
-            const r = rest(), max = 110 * S;
-            let dx = e.clientX - r.x, dy = e.clientY - r.y;
-            const d = Math.hypot(dx, dy);
-            if (d > max) { dx *= max / d; dy *= max / d; }
-            st.pull = { x: r.x + dx, y: r.y + dy };
-        });
-        const release = () => {
-            if (!st.pull) return;
-            const r = rest(), p = st.pull;
-            st.pull = null;
-            if (Math.hypot(r.x - p.x, r.y - p.y) < 12) return;
-            const k = 14 * Math.max(1, Math.sqrt(H / 850)) / S;
-            st.pebbles.push({ x: r.x, y: r.y, vx: (r.x - p.x) * k, vy: (r.y - p.y) * k, r: 5, cool: 0 });
-            st.shots++;
-            shotsEl.textContent = st.shots;
-            blip(320, 0.08, 'sawtooth', 0.03);
-        };
-        slingH.addEventListener('pointerup', release);
-        slingH.addEventListener('pointercancel', () => { st.pull = null; });
+        // ---------- torch geometry ----------
+        function shoulder() {
+            const r = svg.getBoundingClientRect(), k = r.width / 120;
+            return { x: r.left + SHOULDER.x * k, y: r.top + SHOULDER.y * k, k };
+        }
+        function tip(sh) {
+            const a = st.phi * Math.PI / 180;
+            return { x: sh.x + Math.cos(a) * TIP * sh.k, y: sh.y + Math.sin(a) * TIP * sh.k };
+        }
+        // the beam's target, in viewport coordinates
+        const beamRect = () => ({ x: st.beam.x, y: st.beam.y - scrollY, w: st.beam.w, h: st.beam.h });
 
         // ---------- simulation ----------
         function step(dt, now) {
-            if (!st.drag) {
-                if (reduced) {
-                    st.th *= Math.pow(0.0001, dt);
-                    st.om = 0;
-                } else {
-                    st.om += -SWING * Math.sin(st.th) * dt;
-                    st.om *= Math.pow(0.55, dt);
-                    st.th = clamp(st.th + st.om * dt, -1.3, 1.3);
-                }
-            }
+            const el = pickSpot();
+            if (el !== st.spot) { st.spot = el; refresh(); }
 
-            let target = st.on && st.bulb ? 1 : 0;
-            if (target && now < st.flickEnd && !reduced) target = Math.random() < 0.45 ? 0.08 : 1;
-            st.I += (target - st.I) * Math.min(1, dt * (target > st.I ? 20 : 12));
+            // aim at the visible part of the section; kept in page coordinates so it scrolls along
+            const r = el.getBoundingClientRect(), pad = 18;
+            let top = Math.max(r.top, 0), bottom = Math.min(r.bottom, H);
+            if (bottom <= top) { top = r.top; bottom = r.bottom; }
+            const target = { x: r.left - pad, y: top + scrollY - pad, w: r.width + pad * 2, h: bottom - top + pad * 2 };
+            if (!st.beam) st.beam = { ...target };
+            const f = ease(7, dt);
+            for (const key in target) st.beam[key] += (target[key] - st.beam[key]) * f;
 
-            const swRect = sw.getBoundingClientRect();
-            const sub = 4, h = dt / sub;
-            for (const p of st.pebbles) {
-                for (let i = 0; i < sub && !p.dead; i++) {
-                    p.vy += GRAVITY * h;
-                    p.x += p.vx * h;
-                    p.y += p.vy * h;
-                    p.cool -= h;
-                    const g = geo();
-                    // pebble in the shade's own frame: ly runs down the cord, lx across the rim
-                    const dx = p.x - g.P.x, dy = p.y - g.P.y;
-                    const lx = (dx * g.c - dy * g.s) / S, ly = (dx * g.s + dy * g.c) / S;
-                    const inShade = ly > -p.r && ly < 58 + p.r && Math.abs(lx) < 15 + 41 * clamp(ly / 58, 0, 1) + p.r;
-                    if (st.bulb && Math.hypot(p.x - g.bulb.x, p.y - g.bulb.y) < 12 * S + p.r) {
-                        breakBulb(p);
-                        p.dead = true;
-                    } else if (p.cool <= 0 && inShade) {
-                        // torque about the ceiling anchor, then bounce off
-                        const rx = p.x - cx, ry = p.y, R2 = rx * rx + ry * ry;
-                        if (!reduced) st.om = clamp(st.om - (rx * p.vy - ry * p.vx) / R2 * 0.8, -9, 9);
-                        let nx = p.x - g.shadeC.x, ny = p.y - g.shadeC.y;
-                        const n = Math.hypot(nx, ny) || 1;
-                        nx /= n; ny /= n;
-                        const vn = p.vx * nx + p.vy * ny;
-                        if (vn < 0) { p.vx -= 1.6 * vn * nx; p.vy -= 1.6 * vn * ny; }
-                        p.cool = 0.15;
-                        thunk();
-                    } else if (p.x > swRect.left && p.x < swRect.right && p.y > swRect.top && p.y < swRect.bottom) {
-                        toggle();
-                        p.dead = true;
-                    }
-                }
-                if (p.y > H + 60 || p.x < -60 || p.x > W + 60) p.dead = true;
-            }
-            st.pebbles = st.pebbles.filter(p => !p.dead);
+            // arm: hang when off, aim at the beam target when on
+            const sh = shoulder(), b = beamRect();
+            const aim = clamp(Math.atan2(b.y + b.h / 2 - sh.y, b.x + b.w / 2 - sh.x) * 180 / Math.PI, -80, 25);
+            const want = st.on ? aim : REST + (reduced ? 0 : Math.sin(now * 1.3) * 3);
+            st.phi += (want - st.phi) * ease(9, dt);
+            arm.setAttribute('transform', `translate(${SHOULDER.x} ${SHOULDER.y}) rotate(${st.phi.toFixed(2)})`);
 
-            for (const s of st.shards) {
-                s.vy += GRAVITY * dt;
-                s.x += s.vx * dt;
-                s.y += s.vy * dt;
-                s.a += dt * 12;
-                s.life -= dt;
+            // head + eyes follow the torch, or look around in the dark
+            let tilt, ex, ey;
+            if (st.on) {
+                const a = st.phi * Math.PI / 180;
+                tilt = clamp((st.phi + 40) * 0.15, -6, 6);
+                ex = Math.cos(a) * 1.8;
+                ey = Math.sin(a) * 1.8;
+            } else {
+                const s = reduced ? 0 : Math.sin(now * 0.6);
+                tilt = s * 5;
+                ex = s * 1.6;
+                ey = 0;
             }
-            st.shards = st.shards.filter(s => s.life > 0 && s.y < H + 20);
+            head.setAttribute('transform', `rotate(${tilt.toFixed(2)} 60 47)`);
+            eyes.setAttribute('transform', `translate(${ex.toFixed(2)} ${ey.toFixed(2)})`);
+
+            // click the torch on once the arm is up
+            if (st.on && !st.lit && Math.abs(st.phi - aim) < 12) {
+                st.lit = true;
+                st.flickEnd = now + 0.45;
+                blip(1400, 0.04);
+            }
+            let wantI = st.lit ? 1 : 0;
+            if (wantI && now < st.flickEnd && !reduced) wantI = Math.random() < 0.45 ? 0.08 : 1;
+            st.I += (wantI - st.I) * Math.min(1, dt * (wantI > st.I ? 20 : 12));
+            st.R += ((st.room ? 1 : 0) - st.R) * ease(5, dt);
+
+            const m = (a, c) => Math.round(a + (c - a) * st.I);
+            lens.setAttribute('fill', `rgb(${m(59, 255)},${m(54, 241)},${m(49, 214)})`);
         }
 
         // ---------- drawing ----------
-        function coneLight(g, R) {
-            ctx.save();
-            ctx.translate(g.light.x, g.light.y);
-            ctx.rotate(-st.th);
-            const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
-            grad.addColorStop(0, 'rgba(0,0,0,1)');
-            grad.addColorStop(0.45, 'rgba(0,0,0,0.92)');
-            grad.addColorStop(1, 'rgba(0,0,0,0.5)');
+        function drawCone(o, b) {
+            // wedge from the lens that spans every corner of the target
+            const cxr = b.x + b.w / 2, cyr = b.y + b.h / 2;
+            const a0 = Math.atan2(cyr - o.y, cxr - o.x);
+            let lo = 0, hi = 0, far = 0;
+            for (const [x, y] of [[b.x, b.y], [b.x + b.w, b.y], [b.x, b.y + b.h], [b.x + b.w, b.y + b.h]]) {
+                let d = Math.atan2(y - o.y, x - o.x) - a0;
+                d = Math.atan2(Math.sin(d), Math.cos(d));
+                lo = Math.min(lo, d);
+                hi = Math.max(hi, d);
+                far = Math.max(far, Math.hypot(x - o.x, y - o.y));
+            }
+            lo = Math.max(lo, -1.3);
+            hi = Math.min(hi, 1.3);
+            const R = far + 40;
+            const grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, R);
+            grad.addColorStop(0, 'rgba(0,0,0,0.9)');
+            grad.addColorStop(1, 'rgba(0,0,0,0.4)');
             ctx.fillStyle = grad;
             for (let i = 0; i < 6; i++) {
-                const h = HALF + i * 0.05;
-                ctx.globalAlpha = st.I * 0.45;
+                const p = 0.01 + i * 0.025;
+                ctx.globalAlpha = st.I * 0.24;
                 ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, R, Math.PI / 2 - h, Math.PI / 2 + h);
+                ctx.moveTo(o.x, o.y);
+                ctx.arc(o.x, o.y, R, a0 + lo - p, a0 + hi + p);
                 ctx.closePath();
                 ctx.fill();
             }
+        }
+
+        function ellipse(b, color, alpha) {
+            // soft elliptical pool sized to cover the section
+            const rx = b.w / 2 * 1.18 + 30, ry = b.h / 2 * 1.22 + 30;
+            ctx.save();
+            ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+            ctx.scale(rx, ry);
+            const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
+            g.addColorStop(0, color(1));
+            g.addColorStop(0.72, color(1));
+            g.addColorStop(1, color(0));
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = g;
+            ctx.fillRect(-1, -1, 2, 2);
             ctx.restore();
         }
 
@@ -639,183 +830,29 @@
             ctx.globalAlpha = 1;
             ctx.globalCompositeOperation = 'source-over';
             ctx.clearRect(0, 0, W, H);
-            ctx.fillStyle = 'rgba(12,11,10,0.975)';
+            if (st.R > 0.995) return;
+            ctx.fillStyle = `rgba(12,11,10,${0.975 * (1 - st.R)})`;
             ctx.fillRect(0, 0, W, H);
+            if (st.I < 0.01 || !st.beam) return;
 
-            const g = geo();
-            const R = Math.hypot(W, H) * 1.1;
+            const o = tip(shoulder()), b = beamRect();
 
-            if (st.I > 0.01) {
-                ctx.globalCompositeOperation = 'destination-out';
-                // light bouncing around the room
-                ctx.globalAlpha = st.I * 0.12;
-                ctx.fillRect(0, 0, W, H);
-                coneLight(g, R);
-                // halo around the bulb
-                const halo = ctx.createRadialGradient(g.bulb.x, g.bulb.y, 0, g.bulb.x, g.bulb.y, 150 * S);
-                halo.addColorStop(0, 'rgba(0,0,0,1)');
-                halo.addColorStop(1, 'rgba(0,0,0,0)');
-                ctx.globalAlpha = st.I * 0.8;
-                ctx.fillStyle = halo;
-                ctx.fillRect(g.bulb.x - 160, g.bulb.y - 160, 320, 320);
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.globalAlpha = st.I * 0.08;          // light bouncing around the room
+            ctx.fillRect(0, 0, W, H);
+            drawCone(o, b);
+            ellipse(b, a => `rgba(0,0,0,${a})`, st.I);
+            const glow = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, 44);
+            glow.addColorStop(0, 'rgba(0,0,0,1)');
+            glow.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.globalAlpha = st.I;
+            ctx.fillStyle = glow;
+            ctx.fillRect(o.x - 44, o.y - 44, 88, 88);
 
-                // warm tint inside the cone
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.save();
-                ctx.translate(g.light.x, g.light.y);
-                ctx.rotate(-st.th);
-                const warm = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.7);
-                warm.addColorStop(0, 'rgba(255,200,130,0.16)');
-                warm.addColorStop(1, 'rgba(255,200,130,0)');
-                ctx.globalAlpha = st.I;
-                ctx.fillStyle = warm;
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.arc(0, 0, R, Math.PI / 2 - HALF - 0.1, Math.PI / 2 + HALF + 0.1);
-                ctx.closePath();
-                ctx.fill();
-                ctx.restore();
-            }
-
-            ctx.globalAlpha = 1;
+            // warm tint on the pool
             ctx.globalCompositeOperation = 'source-over';
-            drawLamp(g);
-            drawSling();
-
-            ctx.fillStyle = '#cfc3b0';
-            for (const p of st.pebbles) {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.lineWidth = 1.5;
-            for (const s of st.shards) {
-                ctx.strokeStyle = `rgba(255,236,200,${clamp(s.life, 0, 1)})`;
-                ctx.beginPath();
-                ctx.moveTo(s.x, s.y);
-                ctx.lineTo(s.x + Math.cos(s.a) * 5, s.y + Math.sin(s.a) * 5);
-                ctx.stroke();
-            }
-
-            shadeH.style.transform = `translate(${g.shadeC.x - 55}px, ${g.shadeC.y - 45}px)`;
-            const r = st.pull || rest();
-            slingH.style.transform = `translate(${r.x - 32}px, ${r.y - 32}px)`;
-        }
-
-        function drawLamp(g) {
-            // ceiling rose + cord
-            ctx.fillStyle = '#2b2723';
-            ctx.fillRect(cx - 16, 0, 32, 6);
-            ctx.strokeStyle = '#3d3731';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx, 4);
-            ctx.lineTo(g.P.x, g.P.y);
-            ctx.stroke();
-
-            ctx.save();
-            ctx.translate(g.P.x, g.P.y);
-            ctx.rotate(-st.th);
-            ctx.scale(S, S);
-
-            // glow under the shade
-            if (st.I > 0.01) {
-                const glow = ctx.createRadialGradient(0, 60, 0, 0, 60, 90);
-                glow.addColorStop(0, `rgba(255,213,154,${0.55 * st.I})`);
-                glow.addColorStop(1, 'rgba(255,213,154,0)');
-                ctx.fillStyle = glow;
-                ctx.fillRect(-90, -30, 180, 180);
-            }
-
-            // socket + bulb
-            ctx.fillStyle = '#3a342e';
-            ctx.fillRect(-7, 20, 14, 30);
-            if (st.bulb) {
-                ctx.shadowColor = 'rgba(255,213,154,0.9)';
-                ctx.shadowBlur = 36 * st.I;
-                // dark glass (#4a443d) → lit filament (#fff1d6)
-                const mix = (a, b) => Math.round(a + (b - a) * st.I);
-                ctx.fillStyle = `rgb(${mix(74, 255)},${mix(68, 241)},${mix(61, 214)})`;
-                ctx.beginPath();
-                ctx.arc(0, 60, 12, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            } else {
-                // jagged stub of a broken bulb
-                ctx.strokeStyle = 'rgba(207,195,176,0.7)';
-                ctx.lineWidth = 1.2;
-                ctx.beginPath();
-                ctx.moveTo(-8, 52); ctx.lineTo(-5, 62); ctx.lineTo(-1, 55);
-                ctx.lineTo(3, 64); ctx.lineTo(8, 52);
-                ctx.stroke();
-            }
-
-            // shade
-            const body = ctx.createLinearGradient(-56, 0, 56, 0);
-            body.addColorStop(0, '#191715');
-            body.addColorStop(0.5, '#3a342e');
-            body.addColorStop(1, '#191715');
-            ctx.fillStyle = body;
-            ctx.beginPath();
-            ctx.moveTo(-15, 0);
-            ctx.lineTo(15, 0);
-            ctx.quadraticCurveTo(22, 22, 56, 58);
-            ctx.lineTo(-56, 58);
-            ctx.quadraticCurveTo(-22, 22, -15, 0);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.strokeStyle = st.I > 0.01 ? `rgba(255,213,154,${0.25 + 0.6 * st.I})` : '#4a433c';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(-56, 58);
-            ctx.lineTo(56, 58);
-            ctx.stroke();
-
-            ctx.fillStyle = '#2b2723';
-            ctx.fillRect(-8, -4, 16, 6);
-            ctx.restore();
-        }
-
-        function drawSling() {
-            const b = sling;
-            const A = { x: b.x - 20 * S, y: b.y - 66 * S };
-            const B = { x: b.x + 20 * S, y: b.y - 66 * S };
-            const fork = { x: b.x, y: b.y - 30 * S };
-            const p = st.pull || rest();
-
-            // back band
-            ctx.strokeStyle = '#7a3526';
-            ctx.lineWidth = 3 * S;
-            ctx.beginPath();
-            ctx.moveTo(A.x, A.y);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-
-            // wooden frame
-            ctx.strokeStyle = '#5b4632';
-            ctx.lineWidth = 7 * S;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(b.x, b.y);
-            ctx.lineTo(fork.x, fork.y);
-            ctx.quadraticCurveTo(A.x, fork.y, A.x, A.y);
-            ctx.moveTo(fork.x, fork.y);
-            ctx.quadraticCurveTo(B.x, fork.y, B.x, B.y);
-            ctx.stroke();
-            ctx.lineCap = 'butt';
-
-            // loaded pebble + front band
-            ctx.fillStyle = '#cfc3b0';
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#9a4430';
-            ctx.lineWidth = 3 * S;
-            ctx.beginPath();
-            ctx.moveTo(B.x, B.y);
-            ctx.lineTo(p.x, p.y);
-            ctx.stroke();
+            ellipse(b, a => `rgba(255,205,140,${0.07 * a})`, st.I * (1 - st.R));
+            ctx.globalAlpha = 1;
         }
 
         // ---------- loop ----------
@@ -827,7 +864,6 @@
             draw();
             requestAnimationFrame(frame);
         }
-        requestAnimationFrame(frame);
 
         // ---------- clock ----------
         const clock = $('#clock');
@@ -835,9 +871,18 @@
         tick();
         setInterval(tick, 15000);
 
-        // the lamp comes on by itself unless you beat it to the switch
+        // ---------- start ----------
+        if (store.get('lights-on') === '1') { st.room = true; st.R = 1; setRoom(true); }
+        st.spot = spots[0];
+        refresh();
+        requestAnimationFrame(frame);
+
+        // the guard switches the torch on by themself unless you get there first
         if (reduced) setOn(true);
-        else setTimeout(() => { if (!st.touched) setOn(true); }, 900);
+        else {
+            if (!st.room) say('it’s dark in here… tap me');
+            setTimeout(() => { if (!st.touched) setOn(true); }, 1600);
+        }
     })();
     </script>
 </body>
